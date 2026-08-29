@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ResumeAI</title>
+    <meta
+      name="description"
+      content="Upload a resume and compare it against a job description in seconds."
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container nav" aria-label="Main navigation">
+        <a href="#top" class="brand" aria-label="ResumeAI home">
+          <span class="brand-mark">R</span>
+          <span>ResumeAI</span>
+        </a>
+
+        <div class="nav-links">
+          <a href="#how-it-works">How it works</a>
+          <a href="#about">About</a>
+        </div>
+
+        <button type="button" class="button primary nav-cta" data-scroll-target="#screening-tool">
+          Start Screening
+        </button>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero container">
+        <div class="hero-copy">
+          <p class="eyebrow">AI resume screening</p>
+          <h1>Find the right skills, faster.</h1>
+          <p class="subtext">
+            Upload a resume and compare it to a job description in seconds.
+          </p>
+
+          <div class="hero-actions">
+            <button type="button" class="button primary large" data-scroll-target="#screening-tool">
+              Start Screening →
+            </button>
+          </div>
+
+          <p class="file-types" aria-label="Supported file types">PDF • DOCX • TXT</p>
+        </div>
+      </section>
+
+      <section id="screening-tool" class="tool-wrap">
+        <div class="container">
+          <div class="screen-card" aria-live="polite">
+            <form id="screen-form" novalidate>
+              <div class="field upload-field">
+                <label for="resumeInput" class="field-label">Resume upload</label>
+                <input id="resumeInput" type="file" accept=".pdf,.doc,.docx,.txt" aria-label="Upload resume" hidden />
+
+                <div
+                  id="uploadDropzone"
+                  class="upload-dropzone"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Upload resume"
+                >
+                  <div class="upload-contents">
+                    <div class="upload-icon" aria-hidden="true">↓</div>
+                    <p class="upload-prompt">Upload Resume</p>
+                    <p class="upload-meta">PDF, DOCX, or TXT up to 5 MB</p>
+                  </div>
+                </div>
+
+                <div id="fileMeta" class="file-success hidden" aria-live="polite"></div>
+                <div id="uploadError" class="status-message error hidden" aria-live="assertive"></div>
+              </div>
+
+              <div class="field">
+                <label for="jobDescription" class="field-label">Job Description</label>
+                <textarea
+                  id="jobDescription"
+                  name="job_description"
+                  rows="8"
+                  placeholder="Paste the job description here to compare skills, experience, and keywords."
+                  aria-label="Job description"
+                ></textarea>
+                <div class="field-meta">
+                  <span id="charCount">0</span>
+                  <span>characters</span>
+                </div>
+                <div id="jobError" class="status-message error hidden" aria-live="assertive"></div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Required skills</label>
+                <div class="skills-input-wrap">
+                  <div id="skillsList" class="skills-list" aria-live="polite"></div>
+                  <div class="skill-row">
+                    <input
+                      id="skillInput"
+                      type="text"
+                      aria-label="Add required skill"
+                      placeholder="Add a skill"
+                    />
+                    <button type="button" id="addSkillBtn" class="chip-button">+ Add Skill</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-row">
+                <button type="submit" id="analyzeBtn" class="button primary large" disabled>
+                  Analyze
+                </button>
+              </div>
+
+              <div id="analysisNotice" class="status-message success hidden" aria-live="polite"></div>
+
+              <div id="loadingState" class="loading-state hidden" aria-live="polite">
+                <div class="loading-line">
+                  <span class="loading-dot"></span>
+                  <span>Extracting skills</span>
+                </div>
+                <div class="loading-line">
+                  <span class="loading-dot"></span>
+                  <span>Comparing experience</span>
+                </div>
+                <div class="loading-line">
+                  <span class="loading-dot"></span>
+                  <span>Calculating match</span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="results-section hidden" aria-live="polite">
+        <div class="container">
+          <div class="results-card">
+            <div class="score-panel">
+              <div class="score-ring" aria-label="Overall match score">
+                <svg viewBox="0 0 120 120" class="score-svg" aria-hidden="true">
+                  <circle class="score-track" cx="60" cy="60" r="48"></circle>
+                  <circle class="score-progress" cx="60" cy="60" r="48"></circle>
+                </svg>
+                <div class="score-content">
+                  <span id="overallScore">0</span>
+                  <small>%</small>
+                </div>
+              </div>
+
+              <div class="score-copy">
+                <div id="scoreLabel" class="score-label">Strong Match</div>
+                <p id="scoreInterpretation">
+                  This profile aligns well with the role and highlights the right fit.
+                </p>
+              </div>
+            </div>
+
+            <div class="results-grid">
+              <article class="info-card">
+                <h3>Strengths</h3>
+                <div id="strengthsList" class="tag-list" aria-live="polite"></div>
+              </article>
+
+              <article class="info-card">
+                <h3>Skills to Improve</h3>
+                <div id="gapsList" class="tag-list" aria-live="polite"></div>
+              </article>
+            </div>
+
+            <div class="breakdown-block">
+              <h3>Match breakdown</h3>
+
+              <div class="bar-group">
+                <div class="bar-header">
+                  <span>Resume similarity</span>
+                  <strong id="similarityValue">0%</strong>
+                </div>
+                <div class="bar-track">
+                  <span id="similarityBar" class="bar-fill"></span>
+                </div>
+              </div>
+
+              <div class="bar-group">
+                <div class="bar-header">
+                  <span>Required skill score</span>
+                  <strong id="requiredValue">0%</strong>
+                </div>
+                <div class="bar-track">
+                  <span id="requiredBar" class="bar-fill"></span>
+                </div>
+              </div>
+
+              <div class="bar-group">
+                <div class="bar-header">
+                  <span>Preferred skill score</span>
+                  <strong id="preferredValue">0%</strong>
+                </div>
+                <div class="bar-track">
+                  <span id="preferredBar" class="bar-fill"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="insight-block">
+              <button type="button" class="collapsible-toggle" data-target="keywordInsights">
+                Keyword Insights
+              </button>
+              <div id="keywordInsights" class="collapsible-content hidden">
+                <div class="insight-columns">
+                  <div>
+                    <h4>Matched keywords</h4>
+                    <ul id="matchedKeywordsList" class="keyword-list"></ul>
+                  </div>
+                  <div>
+                    <h4>Missing keywords</h4>
+                    <ul id="missingKeywordsList" class="keyword-list"></ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="recommendation-card">
+              <h3>Recommendation</h3>
+              <p id="recommendationText"></p>
+              <button type="button" id="analyzeAnotherBtn" class="button secondary">
+                Analyze Another Resume →
+              </button>
+            </div>
+
+            <div class="technical-block">
+              <button type="button" class="collapsible-toggle" data-target="analysisDetails">
+                View Analysis Details
+              </button>
+              <div id="analysisDetails" class="collapsible-content hidden">
+                <pre id="analysisDetailsContent" class="technical-json"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how-it-works" class="how-it-works">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-kicker">How it works</p>
+            <h2>Simple screening in three steps.</h2>
+          </div>
+
+          <div class="steps-grid">
+            <article class="step-card">
+              <div class="step-icon" aria-hidden="true">01</div>
+              <h3>Upload</h3>
+              <p>Share the resume you want to review.</p>
+            </article>
+
+            <article class="step-card">
+              <div class="step-icon" aria-hidden="true">02</div>
+              <h3>Compare</h3>
+              <p>Match it against the job description and skills.</p>
+            </article>
+
+            <article class="step-card">
+              <div class="step-icon" aria-hidden="true">03</div>
+              <h3>Discover</h3>
+              <p>See strengths, gaps, and the next best move.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="about" class="site-footer">
+      <div class="container footer-inner">
+        <div class="brand footer-brand">
+          <span class="brand-mark">R</span>
+          <span>ResumeAI</span>
+        </div>
+        <p>Quick resume screening for hiring teams.</p>
+      </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+  </body>
+</html>
